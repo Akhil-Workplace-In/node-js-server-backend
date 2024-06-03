@@ -4,6 +4,13 @@ const PORT = 3000;
 const zod = require("zod");
 const schema = zod.array(zod.number());
 
+const schema1 = zod.array(zod.number());
+
+const schema2 = zod.object({
+    email: zod.string().email(),
+    password: zod.string().min(8)
+})
+
 // we created schema to create the structure of our inputs from client request
 
 // we're using this schema to validate correct inputs
@@ -17,6 +24,7 @@ app.post("/health-checkup", (req, res) => { // we are handling request on this r
     // kidneys = [1, 2] // we're accepting inputs in this format
     const kidneys = req.body.kidneys;
     const response = schema.safeParse(kidneys);
+
     const kidneysLength = kidneys.length;
     if(!response.success){
         res.status(411).json({
