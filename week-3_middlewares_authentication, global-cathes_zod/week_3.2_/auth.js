@@ -1,10 +1,8 @@
-// Fetch, Authentication and Databases
-
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const jwtPassword = "123456";
-
 const app = express();
+app.use(express.json());
 
 const ALL_USERS = [
     {
@@ -28,14 +26,17 @@ const ALL_USERS = [
 ];
 
 function userExists(username, password){
-    let result = false;
+    let userExists = false;
     for(let i=0; i<ALL_USERS.length; i++){
-        if(ALL_USERS[i]["username"] == username && ALL_USERS[i]["password"] == password)
-            result = true;
+        if(ALL_USERS[i]["username"] == username && ALL_USERS[i]["password"] == password){
+            userExists = true;
+        }
     }
-    return result;
+
+    return userExists;
 }
 
+// checks for the perticular user if exist it returns back with token
 app.post("/signin", function(req, res){
     const username = req.body.username;
     const password = req.body.password;
@@ -46,26 +47,45 @@ app.post("/signin", function(req, res){
         });
     }
 
-    var token = jwt.sign({ username: username}, "shhhhh");
+    var token = jwt.sign({username: username}, jwtPassword); //  this create the twt token  //its the job of frontend to store the jwt token in local storage
+
     return res.json({
         token,
     });
+    
 });
 
-app.get("/us ers", function(req, res){
+
+// 
+
+app.get("/users", function(req, res){
     const token = req.headers.authorization;
-    try{
+
+    try {
         const decoded = jwt.verify(token, jwtPassword);
         const username = decoded.username;
-        //return a list of users than this username
- 
-    } catch (err) {
-        return res.status(403).json({
-            msg: "invalid token",
+
+        //return a list of users other than this username
+        let newUsers = ALL_USERS.filter(function(value){
+           if(value.username == username){
+            return false
+           }else {
+            return true;
+           }
         })
+        return res.json({
+            users: newUsers
+        })
+
+    } catch(err){
+        return res.status(403).json({
+            msg: "Invalid token",
+        });
     }
-})
-
-app.listen(3000);
+});
 
 
+
+app.listen(3000, function(){
+    console.log("App is listening at 3000");
+});
